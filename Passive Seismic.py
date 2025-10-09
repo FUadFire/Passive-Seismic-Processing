@@ -142,4 +142,5 @@ class SeismicApp:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = SeismicApp(ro
+    app = SeismicApp(root)
+    root.mainloop()
