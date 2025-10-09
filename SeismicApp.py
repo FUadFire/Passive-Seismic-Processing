@@ -11,7 +11,7 @@ from PIL import Image, ImageTk
 class SeismicApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Passive Seismic and HVSR Data Processing")
+        self.root.title("Passive Seismic Data Processing")
         
         # --- Vars untuk Seismic ---
         self.stream_gabungan = Stream()
@@ -40,14 +40,17 @@ class SeismicApp:
         file_menu.add_separator()
         file_menu.add_command(label="Simpan Data Gabungan", command=self.simpan_data_gabungan)
         file_menu.add_command(label="Simpan Data Potongan", command=self.simpan_data_potongan)
+        file_menu.add_command(label="Simpan Gambar Hasil Trimming", command=self.simpan_figure_hasil_trimming)
+        file_menu.add_command(label="Simpan Gambar Hasil Merger", command=self.simpan_figure_hasil_merger)
 
         # Menu HVSR dan submenu-nya
         self.HVSR_menu = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="HVSR", menu=self.HVSR_menu)
         self.HVSR_menu.add_command(label="Pilih File (.mseed)", command=self.select_hvsr_files)
-        self.HVSR_menu.add_command(label="Jalankan Proses HVSR", command=self.run_processing, state='disabled')
-        self.HVSR_menu.add_command(label="Simpan Gambar Hasil HVSR", command=self.save_figure, state='disabled')
-        self.HVSR_menu.add_command(label="Simpan Hasil Analisis (.csv)", command=self.save_results, state='disabled')
+        self.HVSR_menu.add_command(label="Jalankan Proses HVSR", command=self.run_processing)
+        self.HVSR_menu.add_separator()
+        self.HVSR_menu.add_command(label="Simpan Gambar Hasil HVSR", command=self.save_figure)
+        self.HVSR_menu.add_command(label="Simpan Hasil Analisis (.csv)", command=self.save_results)
 
         # Menu LFPS (placeholder)
         self.LFPS_menu = tk.Menu(self.menubar, tearoff=0)
@@ -63,14 +66,14 @@ class SeismicApp:
         main_frame.pack(fill='both', expand=True)
 
         # Judul dan deskripsi
-        title = tk.Label(main_frame, text="Software Preprocessing Data Pasif Seismik", font=("Arial", 16, "bold"))
-        title.grid(row=0, column=0, columnspan=2, pady=(0, 0))
+        title = tk.Label(main_frame, text="Passive Seismic Data Processing Software", font=("Trebuchet", 16, "bold"))
+        title.grid(row=0, column=0, columnspan=3, pady=(0, 5))
 
         desc_text = (
-            "Seismik pasif adalah metode pengamatan getaran bumi tanpa sumber buatan."
-            "Tools pada menu FILE mengolah data seismik format MiniSEED.Menu HVSR menyediakan modul pengolahan HVSR menggunakan hvsrpy.Gunakan menu-menu tersebut untuk mengelola dan menganalisis data."
+            "Seismik pasif adalah salah satu metode geofisika yang memanfaat gelombang seismik bawah permukaann baik yang berasal dari tremor maupun dari mikroseismik. Pengukuran Pasif Seismik ini tidak membutuhkan artificial source, sehingga hanya mengandalkan sumber dari alam."
+            "Software processing data pasif seismik ini dirancang untuk memudahkan geophysicist dalam melakukan pengolahan data pasif seismik mulai dari mergering data, trimming, bahkan processing. Software ini dilengkapi dengan fiture pengolahan data yang khusus mengarah pada metode HVSR dan LFPS. Semoga software ini memberikan sumbangsih kepada kemajuan ilmu pengetahuan dan teknologi khususnya di PT Geoservices."
         )
-        desc_label = tk.Label(main_frame, text=desc_text, justify='left', font=("Arial", 10), wraplength=600)
+        desc_label = tk.Label(main_frame, text=desc_text, justify='justify', font=("Trebuchet", 10), wraplength=600)
         desc_label.grid(row=1, column=0, columnspan=2, sticky='w', pady=(0, 20))
 
         # Frame untuk gambar hasil (seismik penggabungan dan pemotongan)
@@ -78,12 +81,12 @@ class SeismicApp:
         frame_gambar.grid(row=2, column=0, sticky='ns')
 
         # Label dan gambar penggabungan di row 0 dan 1
-        tk.Label(frame_gambar, text="Gambar Hasil Penggabungan", font=("Arial", 12, "underline")).grid(row=0, column=0, padx=20, pady=(0,5))
+        tk.Label(frame_gambar, text="Hasil Merger RAW Data", font=("Arial", 12, "underline")).grid(row=0, column=0, padx=20, pady=(0,5))
         self.label_img_gabung = tk.Label(frame_gambar, borderwidth=2, relief="groove")
         self.label_img_gabung.grid(row=1, column=0, padx=20, pady=10)
 
         # Label dan gambar pemotongan di row 2 dan 3
-        tk.Label(frame_gambar, text="Gambar Hasil Pemotongan", font=("Arial", 12, "underline")).grid(row=2, column=0, padx=20, pady=(10,5))
+        tk.Label(frame_gambar, text="Hasil Trimming RAW Data", font=("Arial", 12, "underline")).grid(row=2, column=0, padx=20, pady=(10,5))
         self.label_img_potong = tk.Label(frame_gambar, borderwidth=2, relief="groove")
         self.label_img_potong.grid(row=3, column=0, padx=20, pady=10)
 
