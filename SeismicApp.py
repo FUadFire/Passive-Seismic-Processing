@@ -4,7 +4,6 @@ from obspy import read, Stream, UTCDateTime
 import matplotlib.pyplot as plt
 import os
 import pathlib
-import numpy as np
 import hvsrpy
 from PIL import Image, ImageTk
 
