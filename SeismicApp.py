@@ -40,8 +40,10 @@ class SeismicApp:
         file_menu.add_separator()
         file_menu.add_command(label="Simpan Data Gabungan", command=self.simpan_data_gabungan)
         file_menu.add_command(label="Simpan Data Potongan", command=self.simpan_data_potongan)
-        file_menu.add_command(label="Simpan Gambar Hasil Trimming", command=self.simpan_figure_hasil_trimming)
-        file_menu.add_command(label="Simpan Gambar Hasil Merger", command=self.simpan_figure_hasil_merger)
+        file_menu.add_command(label="Simpan Gambar Hasil Trimming", command=self.simpan_gambar_hasil_trimming)
+        file_menu.add_command(label="Simpan Gambar Hasil Merger", command=self.simpan_gambar_hasil_mergering)
+        file_menu.add_separator()
+        file_menu.add_command(label="Reset", command=self.reset_data)
 
         # Menu HVSR dan submenu-nya
         self.HVSR_menu = tk.Menu(self.menubar, tearoff=0)
@@ -62,7 +64,7 @@ class SeismicApp:
         exit_menu.add_command(label="Keluar dari Program", command=root.quit)
 
         # Frame utama
-        main_frame = tk.Frame(root, padx=10, pady=20)
+        main_frame = tk.Frame(root, padx=100, pady=20)
         main_frame.pack(fill='both', expand=True)
 
         # Judul dan deskripsi
@@ -73,8 +75,8 @@ class SeismicApp:
             "Seismik pasif adalah salah satu metode geofisika yang memanfaat gelombang seismik bawah permukaann baik yang berasal dari tremor maupun dari mikroseismik. Pengukuran Pasif Seismik ini tidak membutuhkan artificial source, sehingga hanya mengandalkan sumber dari alam."
             "Software processing data pasif seismik ini dirancang untuk memudahkan geophysicist dalam melakukan pengolahan data pasif seismik mulai dari mergering data, trimming, bahkan processing. Software ini dilengkapi dengan fiture pengolahan data yang khusus mengarah pada metode HVSR dan LFPS. Semoga software ini memberikan sumbangsih kepada kemajuan ilmu pengetahuan dan teknologi khususnya di PT Geoservices."
         )
-        desc_label = tk.Label(main_frame, text=desc_text, justify='justify', font=("Trebuchet", 10), wraplength=600)
-        desc_label.grid(row=1, column=0, columnspan=2, sticky='w', pady=(0, 20))
+        desc_label = tk.Label(main_frame, text=desc_text, justify='center', font=("Trebuchet", 10), wraplength=600)
+        desc_label.grid(row=1, column=0, columnspan=3, sticky='w', pady=(0, 20))
 
         # Frame untuk gambar hasil (seismik penggabungan dan pemotongan)
         frame_gambar = tk.Frame(main_frame)
@@ -99,7 +101,7 @@ class SeismicApp:
         self.label_hvsr_title.pack(pady=(0,5))
 
         self.label_img_result = tk.Label(hvsr_frame, borderwidth=2, relief="groove")
-        self.label_img_result.pack(pady=(0,10))
+        self.label_img_result.pack(pady=(0,20))
 
         # Text summary statistik HVSR
         self.text_summary = tk.Text(hvsr_frame, height=5, width=20, font=("Courier New", 10))
@@ -206,7 +208,117 @@ class SeismicApp:
         photo = ImageTk.PhotoImage(image)
         label.config(image=photo)
         label.image = photo
+    
+    
+    def reset_data(self):
+        konfirmasi = messagebox.askyesno("Konfirmasi Reset", "Yakin ingin mereset semua hasil dan gambar?")
+        if konfirmasi:
+        # Hapus data seismic
+            self.stream_gabungan = Stream()
+            self.stream_potongan = Stream()
 
+        # Hapus data HVSR
+            self.fnames = []
+            self.srecords = None
+            self.srecords_preprocessed = None
+            self.hvsr = None
+
+        # Bersihkan gambar di label dengan mengosongkan image
+            self.label_img_gabung.config(image=None)
+            self.label_img_gabung.image = None
+
+            self.label_img_potong.config(image=None)
+            self.label_img_potong.image = None
+
+            self.label_img_result.config(image=None)
+            self.label_img_result.image = None
+
+        # Bersihkan summary teks HVSR
+            self.text_summary.config(state='normal')
+            self.text_summary.delete(1.0, "end")
+            self.text_summary.config(state='disabled')
+
+        # Reset status
+            self.status_label.config(text="Semua hasil dan gambar sudah direset.", fg="red")
+
+        # Disable menu terkait agar tidak aktif setelah reset
+            self.HVSR_menu.entryconfig("Jalankan Proses HVSR")
+            self.HVSR_menu.entryconfig("Simpan Gambar Hasil HVSR")
+            self.HVSR_menu.entryconfig("Simpan Hasil Analisis (.csv)")
+    
+#     def save_figure_Trimming(self):
+#         fname = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG", "*.png")],
+#                                              title="Simpan Gambar Hasil Trimming")
+#         if fname:
+#             img = plt.imread(self.temp_dir)
+#             fig, ax = plt.subplots(figsize=(5,4))
+#             ax.imshow(img)
+#             ax.axis('off')
+#             fig.savefig(fname, dpi=300, bbox_inches='tight')
+#             plt.close(fig)
+#             messagebox.showinfo("Sukses", f"Gambar berhasil disimpan ke:\n{fname}")
+    
+#     def save_figure_Mergering(self):
+#         fname = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG", "*.png")],
+#                                              title="Simpan Gambar Hasil HVSR")
+#         if fname:
+#             img = plt.imread(self.temp_dir)
+#             fig, ax = plt.subplots(figsize=(5,4))
+#             ax.imshow(img)
+#             ax.axis('off')
+#             fig.savefig(fname, dpi=300, bbox_inches='tight')
+#             plt.close(fig)
+#             messagebox.showinfo("Sukses", f"Gambar berhasil disimpan ke:\n{fname}")
+
+    def simpan_gambar_hasil_trimming(self):
+        if not hasattr(self, 'stream_potongan') or len(self.stream_potongan) == 0:
+            messagebox.showwarning("Peringatan", "Belum ada hasil trimming yang dapat disimpan.")
+            return
+
+        from tkinter.filedialog import asksaveasfilename
+        path_simpan = asksaveasfilename(
+            defaultextension=".png",
+            filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
+            title="Simpan gambar hasil trimming"
+        )
+        if not path_simpan:
+            return
+
+        # Membuat plot untuk disimpan
+        fig = self.stream_potongan.plot(show=False)
+        try:
+            fig.savefig(path_simpan)
+            messagebox.showinfo("Sukses", f"Gambar berhasil disimpan di:\n{path_simpan}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Gagal menyimpan gambar:\n{e}")
+        finally:
+            plt.close(fig)
+
+            
+    def simpan_gambar_hasil_mergering(self):
+        if not hasattr(self, 'stream_gabungan') or len(self.stream_gabungan) == 0:
+            messagebox.showwarning("Peringatan", "Belum ada hasil trimming yang dapat disimpan.")
+            return
+
+        from tkinter.filedialog import asksaveasfilename
+        path_simpan = asksaveasfilename(
+            defaultextension=".png",
+            filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
+            title="Simpan gambar hasil trimming"
+        )
+        if not path_simpan:
+            return
+
+        # Membuat plot untuk disimpan
+        fig = self.stream_potongan.plot(show=False)
+        try:
+            fig.savefig(path_simpan)
+            messagebox.showinfo("Sukses", f"Gambar berhasil disimpan di:\n{path_simpan}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Gagal menyimpan gambar:\n{e}")
+        finally:
+            plt.close(fig)
+    
     # ----- Fungsi untuk HVSR -----
     def select_hvsr_files(self):
         files = filedialog.askopenfilenames(title="Pilih file MiniSEED untuk HVSR",
@@ -220,8 +332,13 @@ class SeismicApp:
             messagebox.showerror("Error", "File tidak ditemukan:\n" + "\n".join(missing_files))
             self.status_label.config(text="File tidak ditemukan untuk HVSR.", fg="red")
             return
-        self.status_label.config(text=f"{sum(len(fset) for fset in self.fnames)} file HVSR berhasil dipilih.", fg="green")
-        self.HVSR_menu.entryconfig("Jalankan Proses HVSR", state="normal")
+        
+        messagebox.showinfo("Informasi", f"{sum(len(fset) for fset in self.fnames)} file HVSR berhasil dipilih.")
+        self.HVSR_menu.entryconfig("Jalankan Proses HVSR", state="normal",)
+
+
+#         self.status_label.config(text=f"{sum(len(fset) for fset in self.fnames)} file HVSR berhasil dipilih.", fg="green")
+#         self.HVSR_menu.entryconfig("Jalankan Proses HVSR", state="normal")
 
     def run_processing(self):
         try:
